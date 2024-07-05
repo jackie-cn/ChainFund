@@ -17,7 +17,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
     uint fundGoal;
 
     function setUp() external {
-        //deploy the Crowdfunding contract
+        // Deploy the Crowdfunding contract
         deployCrowdfundingPlatform = new DeployCrowdfundingPlatform();
         platform = deployCrowdfundingPlatform.deployCrowdfundingPlatform();
         vm.prank(platform.platformAdmin());
@@ -29,9 +29,9 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         duration = 3600;
         fundGoal = 1000 ether;
 
-        // Set initial balances, set this to avoid the fork test problem
-        //because the initial balances of the accounts in the forked testing
-        //environment are different from those in the local environment.
+        // Set initial balances to avoid fork test problems,
+        // because initial balances in the forked testing environment
+        // are different from those in the local environment.
         vm.deal(platformAdmin, 0);
         vm.deal(user1, 0);
         vm.deal(user2, 0);
@@ -39,9 +39,9 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         vm.deal(projectOwner2, 0);
     }
 
-    // 测试多人参加多个项目进展顺利，项目方提款
+    // Test multiple projects with multiple participants progressing smoothly, with project owners withdrawing funds
     function testMultipleProjectsWithWithdrawal() public {
-        // 创建项目1和项目2
+        // Create Project 1 and Project 2
         vm.prank(projectOwner1);
         platform.createProject(
             "Integration Project 1",
@@ -58,7 +58,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
             duration
         );
 
-        // 用户1和用户2资助项目1和项目2
+        // Users 1 and 2 fund Projects 1 and 2
         uint amount1 = 500 ether;
         uint amount2 = 500 ether;
 
@@ -74,11 +74,11 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         platform.fundProject{value: amount2}(1);
         vm.stopPrank();
 
-        // 验证资金总额
+        // Verify total funds
         assertEq(platform.getProjectFundedAmout(0), fundGoal);
         assertEq(platform.getProjectFundedAmout(1), fundGoal);
 
-        // 项目方提现
+        // Project owners withdraw funds
         uint fee = (fundGoal * platform.feePercentage()) / 100;
 
         vm.prank(projectOwner1);
@@ -87,7 +87,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         vm.prank(projectOwner2);
         platform.withdraw(1);
 
-        // 验证资金转账
+        // Verify fund transfers
         assertEq(platform.getProjectFundedAmout(0), 0);
         assertEq(platform.getProjectFundedAmout(1), 0);
         assertEq(address(projectOwner1).balance, fundGoal - fee);
@@ -95,9 +95,9 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         assertEq(address(platformAdmin).balance, fee * 2);
     }
 
-    // 测试多人参加多个项目，项目方取消项目，用户退款
+    // Test multiple projects with multiple participants, project owners cancel projects, users get refunds
     function testMultipleProjectsCancelAndRefund() public {
-        // 创建项目1和项目2
+        // Create Project 1 and Project 2
         vm.prank(projectOwner1);
         platform.createProject(
             "Integration Project 1",
@@ -114,7 +114,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
             duration
         );
 
-        // 用户1和用户2资助项目1和项目2
+        // Users 1 and 2 fund Projects 1 and 2
         uint amount1 = 500 ether;
         uint amount2 = 500 ether;
 
@@ -130,17 +130,17 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         platform.fundProject{value: amount2}(1);
         vm.stopPrank();
 
-        // 项目方取消项目
+        // Project owners cancel projects
         vm.prank(projectOwner1);
         platform.cancalProject(0);
 
         vm.prank(projectOwner2);
         platform.cancalProject(1);
 
-        // 记录用户1的初始余额
+        // Record initial balance of User 1
         uint initialUser1Balance = user1.balance;
 
-        // 用户1退款
+        // User 1 refunds
         vm.startPrank(user1);
         platform.refund(0);
         platform.refund(1);
@@ -149,10 +149,10 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         assertEq(platform.getContribution(1), 0);
         assertEq(user1.balance, initialUser1Balance + amount1 * 2);
 
-        // 记录用户2的初始余额
+        // Record initial balance of User 2
         uint initialUser2Balance = user2.balance;
 
-        // 用户2退款
+        // User 2 refunds
         vm.startPrank(user2);
         platform.refund(0);
         platform.refund(1);
@@ -162,9 +162,9 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         assertEq(user2.balance, initialUser2Balance + amount2 * 2);
     }
 
-    // 测试多人参加多个项目，项目逾期，用户退款
+    // Test multiple projects with multiple participants, projects expire, users get refunds
     function testMultipleProjectsExpiredAndRefund() public {
-        // 创建项目1和项目2
+        // Create Project 1 and Project 2
         vm.prank(projectOwner1);
         platform.createProject(
             "Integration Project 1",
@@ -181,7 +181,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
             duration
         );
 
-        // 用户1和用户2资助项目1和项目2
+        // Users 1 and 2 fund Projects 1 and 2
         uint amount1 = 400 ether;
         uint amount2 = 400 ether;
 
@@ -197,13 +197,13 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         platform.fundProject{value: amount2}(1);
         vm.stopPrank();
 
-        // 跳过时间使项目过期
+        // Skip time to expire the projects
         vm.warp(block.timestamp + duration + 1);
 
-        // 记录用户1的初始余额
+        // Record initial balance of User 1
         uint initialUser1Balance = user1.balance;
 
-        // 用户1退款
+        // User 1 refunds
         vm.startPrank(user1);
         platform.refund(0);
         platform.refund(1);
@@ -212,10 +212,10 @@ contract CrowdfundingPlatformIntegrationTest is Test {
         assertEq(platform.getContribution(1), 0);
         assertEq(user1.balance, initialUser1Balance + amount1 * 2);
 
-        // 记录用户2的初始余额
+        // Record initial balance of User 2
         uint initialUser2Balance = user2.balance;
 
-        // 用户2退款
+        // User 2 refunds
         vm.startPrank(user2);
         platform.refund(0);
         platform.refund(1);

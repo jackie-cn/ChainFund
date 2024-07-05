@@ -1,7 +1,3 @@
-//账户1创建5个项目，每个项目的预期目标是0.00001eth
-//账户2投资5个项目, 都投资0.00001eth
-//账户1withdraw5个项目的资金
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
@@ -14,7 +10,7 @@ contract CrowdfundingScript is Script {
     address public account2;
     //You can also automatically obtain this address through the Foundry Devops
     address public platformContractAddress =
-        0xbA573146c34e5dAA07d9Fd2bB77AA214C30DB8aF;
+        0xfdd15A5EB2a31773bE8c0481e0dD26aebd8667Fb;
 
     function run() public {
         uint256 amount = 0.00001 ether;
@@ -22,7 +18,7 @@ contract CrowdfundingScript is Script {
         uint projectID;
         platform = CrowdfundingPlatform(payable(platformContractAddress));
 
-        for (uint i = 0; i < 5; i++) {
+        for (uint i = 0; i < 2; i++) {
             vm.startBroadcast(vm.envUint("USER1_PRIVATE_KEY"));
             projectID = platform.createProject(
                 string(abi.encodePacked("Title", vm.toString(i))),
@@ -32,18 +28,15 @@ contract CrowdfundingScript is Script {
             );
             vm.stopBroadcast();
 
-            // 使用account2资助项目
+            // use account2 to fund project
             vm.startBroadcast(vm.envUint("USER2_PRIVATE_KEY"));
             platform.fundProject{value: amount}(projectID);
             vm.stopBroadcast();
 
-            // 使用account1提取项目的资金
+            // use account1 to fund project
             vm.startBroadcast(vm.envUint("USER1_PRIVATE_KEY"));
             platform.withdraw(projectID);
             vm.stopBroadcast();
         }
     }
 }
-
-//source .env
-// forge script CrowdfundingScript.s.sol --rpc-url $RPC_URL --broadcast -vvvv

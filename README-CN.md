@@ -1,124 +1,140 @@
-# A Multi-Chain Crowdfunding Platform Smart Contract Development, Testing, and Deployment
+# 支持多链的众筹平台智能合约开发、测试、部署
 
-## About the Project
+# About the Project
 
-Recently, I have been reviewing my contract development notes and trying to share them through blogs and GitHub to connect with more web3/blockchain enthusiasts for discussion.
+最近在gapping,在翻看合约开发的笔记，并尝试通过博客和github分享，希望能认识更多web3\区块链的朋友，一起交流。
 
-This time, I'm sharing a project called ChainFund, a decentralized crowdfunding platform for Ethereum and other EVM-compatible chains, focusing on early-stage fundraising.
+这次分享的是之前写的项目ChainFund，一个用于以太坊及其它EVM兼容链的去中心化众筹平台，专注于项目前期的资金募集。
 
-The platform has core features such as project creation, project management, fundraising, fund withdrawal, fund refund, and platform fee collection.
+平台具备项目创建、项目管理、资金募集、资金提取资金退款、平台手续费收取等核心功能。
 
-ChainFund's contract code is open source. The contract development uses the Solidity language and the Foundry framework for efficient smart contract development, providing project contracts, unit tests, integration tests, interaction tests, and multi-EVM compatible chain deployment scripts. If you want to build a decentralized crowdfunding platform or learn smart contract development, this is a great resource.
+这里开源了ChainFund的合约代码。合约开发使用solidity语言，并使用Foundry框架实现了智能合约的高效开发，提供了项目合约、单元、集成测试、交互测试、多条EVM兼容链上部署脚本源码。如果你也想做一个去中心化众筹平台或者想在学习智能合约的开发，这是一个很好的资源。
 
-GitHub link:https://github.com/jackie-cn/ChainFund
+github链接：
 
-Ethereum contract address: [0xfdd15a5eb2a31773be8c0481e0dd26aebd8667fb](https://sepolia.etherscan.io/address/0xfdd15a5eb2a31773be8c0481e0dd26aebd8667fb)
+Ethereum 合约地址 ：https://sepolia.etherscan.io/address/0xfdd15a5eb2a31773be8c0481e0dd26aebd8667fb
 
-BSC contract address: [0x103dab21201672cdec9ed25546d1c140ef3bfe11](https://testnet.bscscan.com/address/0x103dab21201672cdec9ed25546d1c140ef3bfe11)
+BSC 合约地址 ：https://testnet.bscscan.com/address/0x103dab21201672cdec9ed25546d1c140ef3bfe11
 
-Arbitrum contract address: [0x06d9170d6e6f7bc7536351dd7b7dbb7042aabde4](https://sepolia.arbiscan.io/address/0x06d9170d6e6f7bc7536351dd7b7dbb7042aabde4)
+Arbitrum合约地址：https://sepolia.arbiscan.io/address/0x06d9170d6e6f7bc7536351dd7b7dbb7042aabde4
 
-## Built With
+## built with
 
-**Technologies**: Solidity, Foundry
+相关技术 : solidity、foundry
 
-**Supported Chains**: EVM-compatible chains. This article demonstrates testing and deployment on Ethereum Sepolia, BSC Testnet, and Arbitrum Testnet.
+支持链：支持EMV兼容链，本文演示了Ethereum speolia、BSC testnet、Arbitum testnet的测试和部署
 
-## Getting Started
+# Getting Started.
 
-### Prerequisites
+## Prerequisites
 
-1. Basic knowledge of Solidity development and installation of [Foundry](https://book.getfoundry.sh/getting-started/installation).
-2. Obtain RPC-URLs, test tokens, and blockchain explorer API keys for different chains, depending on which chain you want ChainFund to use.
+1.具备solidity基础开发知识，安装好[foundry](https://book.getfoundry.sh/getting-started/installation)
 
-If you only want to use one chain, I recommend Ethereum Sepolia:
-- [RPC-URL Link](https://dashboard.alchemy.com/)
-- [Token Faucet Link](https://www.alchemy.com/faucets/Ethereum-sepolia)
-- [Blockchain Explorer API-Key Link](https://etherscan.io/myapikey)
+2.获取不同链上的RPC-URL、测试代币，以及区块链浏览器的API-key，这个取决于你想让ChainFund用在哪条链上。
 
-3. Prepare three wallet addresses and deposit test tokens into them: one for deployment and two for on-chain interaction testing.
+如果你只想在一条链上，建议使用Ethereum speolia：[RPC-URL获取链接](https://dashboard.alchemy.com/) 、
+[代币水龙头链接](https://www.alchemy.com/faucets/ethereum-sepolia)、[区块链浏览器API-KEY获取链接](https://etherscan.io/myapikey)。
+
+3.准备三个钱包地址，并往里面存入测试代币，一个用于部署，两个用户链上交互测试。
 
 ### Installation
 
-1. **Clone the repository**
+2. **克隆仓库**
 
-    ```
-    git clone https://github.com/jackie-cn/ChainFund.git
-    ```
+   ```
+   git clone https://github.com/jackie-cn/ChainFund.git
+   ```
 
-2. **Modify .env**
+   
 
-    Create a .env file in the project directory and fill it out according to .env-example
+2. **修改.env**
 
-    ```
-    ETH_SPEOLIA_RPC_URL=""
-    ETH_API_KEY=""
-    BSC_TESTNET_RPC=""
-    BSC_API_KEY=""
-    ARBITRUM_SPEOLIA_RPC_URL=""
-    ARBITRUM_API_KEY=""
-    DEPLOY_PRIVATE_KEY=""
-    USER1_PRIVATE_KEY=""
-    USER2_PRIVATE_KEY=""
-    ```
+   在项目目录下创建一个.env文件，参照.env-example填写
 
-    **Note:**
-    - Write the wallet private key in the .env file and remember to add .env to .gitignore to avoid exposing it on GitHub.
-    - In actual development, it is not recommended to write keys directly in plain text in the .env file. You can use Foundry's keyStore.
+   ```
+   ETH_SPEOLIA_RPC_URL=""
+   ETH_API_KEY=""
+   BSC_TESTNET_RPC=""
+   BSC_API_KEY="" 
+   ARBRTIUM_SPEOLIA_RPC_URL=""
+   ARBRTIUM_API_KEY=""
+   DEPLOY_PRIVATE_KEY=""
+   USER1_PRIVATE_KEY=""
+   USER2_PRIVATE_KEY=""
+   ```
 
-3. **Install project dependencies and compile**
+   注意：
 
-    ```
-    foundry install
-    ```
+   1.钱包privateKey写在.env文件后，记得在.gitignore添加.env免得上传到github上暴露。
 
-    ```
-    foundry build
-    ```
+   2.实际开发过程中，不建议将密钥直接以明文的方式写在.env文本上，可以使用foundry 的keyStore
 
-### Usage
+3. **安装项目依赖和编译**
 
-**1. Run all local tests:**
+   ```
+   foundry install
+   ```
 
-    forge test
-
-**2. Run all local fork chain tests**
-
-    forge test --rpc-url ${ETH_SPEOLIA_RPC_URL}
-
-**3. Multi-chain deployment and code verification**
-
-First, run
-
-    source .env
-
-Deploy to Ethereum Sepolia chain:
-
-    forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${ETH_SPEOLIA_RPC_URL} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${ETH_API_KEY}
-
-Deploy to BSC Testnet:
-
-    forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${BSC_TESTNET_RPC} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${BSC_API_KEY}
-
-Deploy to Arbitrum Sepolia chain:
-
-    forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${ARBITRUM_SPEOLIA_RPC_URL} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${ARBITRUM_API_KEY}
-
-**4. Execute on-chain interaction test scripts**
-
-Write the contract address deployed on the chain into OnchainInteract.s.sol
-
-![image](pic/image-20240705120951507.png)
-
-    forge script ./script/OnchainInteract.s.sol --rpc-url ${ETH_SPEOLIA_RPC_URL} --broadcast -vvvv --legacy
-
-To execute on different chains, replace **ETH_SPEOLIA_RPC_URL** with the corresponding chain's RPC_URL.
+   ```js
+   foundry build
+   ```
 
 
+### usage
 
-# Code Introduce
+**1.本地全部测试：**
 
-## platform smart contract
+```
+forge test
+```
+
+**2.本地fork链全部测试**
+
+```js
+forge test --rpc-url ${ETH_SPEOLIA_RPC_URL}
+```
+
+**3.多链部署及代码校验**
+
+先执行
+
+```
+source .env
+```
+
+部署Ethereum speolia链：
+
+```js
+forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${ETH_SPEOLIA_RPC_URL} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${ETH_API_KEY}
+```
+
+部署BSC testnet链：
+
+```js
+forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${BSC_TESTNET_RPC} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${BSC_API_KEY}
+```
+
+部署Arbitum speolia链：
+
+```js
+forge script ./script/DeployCrowdfundingPlatform.s.sol --rpc-url ${ARBRTIUM_SPEOLIA_RPC_URL} --private-key ${DEPLOY_PRIVATE_KEY} --broadcast --verify -vvvv --legacy --etherscan-api-key ${ARBRTIUM_API_KEY}
+```
+
+**4.执行链上交互测试脚本**
+
+将已部署到链上的合约地址写到OnchainInteract.s.sol中
+
+![image-20240705120951507](pic/image-20240705120951507.png)
+
+```
+forge script ./script/OnchainInteract.s.sol --rpc-url ${ETH_SPEOLIA_RPC_URL} --broadcast -vvvv --legacy
+```
+
+在不同的链上执行，将**ETH_SPEOLIA_RPC_URL**更换为对应链上的RPC_URL即可
+
+# 代码介绍
+
+## 智能合约代码
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -377,30 +393,32 @@ contract CrowdfundingPlatform {
 
 ```
 
-### Contract Summary
+### 合约概要
 
-- **Platform Admin:** `address public platformAdmin`
-- **Project Status:** `enum ProjectStatus { Active, Cancelled, Finished }`
-- **Project Structure:** Contains project ID, project owner, title, description, funding goal, amount raised, end time, status
-- **Events:** `ProjectCreated`, `FundReceived`, `ProjectCancelled`, `FundWithdraw`, `Refund`
+- **平台管理员:** `address public platformAdmin`
+- **项目状态:** `enum ProjectStatus { Active, Cancelled, Finished }`
+- **项目结构:** 包含项目ID、项目所有者、标题、描述、筹款目标、已筹集金额、结束时间、状态
+- **事件:** `ProjectCreated`, `FundReceived`, `ProjectCancelled`, `FundWithdraw`, `Refund`
 
-### Main Functions
+### 主要函数
 
-- `createProject(string memory _title, string memory _description, uint256 _fundingGoal, uint256 _duration)`: Creates a project
-- `fundProject(uint256 _projectID)`: Funds a project
-- `refund(uint256 _projectID)`: Refunds a project
-- `cancelProject(uint256 _projectID)`: Cancels a project
-- `withdraw(uint256 _projectID)`: Withdraws funds
-- `getContribution(uint256 _projectID)`: Gets contributions
-- `setPlatformFee(uint256 _feePercentage)`: Sets the platform fee
-- `transferOwnership(address _newAdmin)`: Transfers ownership
-- `getProjectFundedAmount(uint256 _projectID)`: Gets the funded amount of a project
-- `getProjectEndTime(uint256 _projectID)`: Gets the end time of a project
-- `getProjectFundingGoal(uint256 _projectID)`: Gets the funding goal of a project
-- `getProjectStatus(uint256 _projectID)`: Gets the status of a project
-- `getProjectCount()`: Gets the number of projects
+- `createProject(string memory _title, string memory _description, uint256 _fundingGoal, uint256 _duration)`: 创建项目
+- `fundProject(uint256 _projectID)`: 资助项目
+- `refund(uint256 _projectID)`: 退款
+- `cancelProject(uint256 _projectID)`: 取消项目
+- `withdraw(uint256 _projectID)`: 提取资金
+- `getContribution(uint256 _projectID)`: 获取捐赠
+- `setPlatformFee(uint256 _feePercentage)`: 设置平台费用
+- `transferOwnership(address _newAdmin)`: 转让所有权
+- `getProjectFundedAmount(uint256 _projectID)`: 获取筹款金额
+- `getProjectEndTime(uint256 _projectID)`: 获取结束时间
+- `getProjectFundingGoal(uint256 _projectID)`: 获取筹款目标
+- `getProjectStatus(uint256 _projectID)`: 获取项目状态
+- `getProjectCount()`: 获取项目数量
 
-## UnitTest
+
+
+## 单元测试代码
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -739,7 +757,7 @@ contract CrowdFundingUnitTest is Test {
 
 
 
-## IntegrationTest
+## 集成测试代码
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -974,7 +992,7 @@ contract CrowdfundingPlatformIntegrationTest is Test {
 
 
 
-## OnChainTest
+## 链上交互测试代码
 
 ```js
 // SPDX-License-Identifier: MIT
@@ -1024,7 +1042,7 @@ contract CrowdfundingScript is Script {
 
 
 
-# Contact
+# 沟通交流
 
 - **email**:  jackiechan4632gmail.com
 - **wechat**: jackie4632

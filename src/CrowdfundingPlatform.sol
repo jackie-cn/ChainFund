@@ -243,6 +243,10 @@ contract CrowdfundingPlatform {
         return project.status;
     }
 
+    function getProjectCount() public view returns (uint) {
+        return projects.length;
+    }
+
     fallback() external payable {}
 
     receive() external payable {}

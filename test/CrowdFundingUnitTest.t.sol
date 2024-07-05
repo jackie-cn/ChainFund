@@ -14,6 +14,19 @@ contract CrowdFundingUnitTest is Test {
     address user2;
     uint duration;
     uint fundGoal;
+    event ProjectCreated(uint256 indexed projectID, address creator);
+    event FundReceived(
+        uint256 indexed projectID,
+        address sender,
+        uint256 amount
+    );
+    event ProjectCancelled(uint256 indexed projectID);
+    event FundWithdraw(
+        uint256 indexed projectID,
+        address sender,
+        uint256 amount
+    );
+    event Refund(uint256 indexed projectID, address sender, uint256 amount);
 
     function setUp() external {
         //deploy the Crowdfunding contract
@@ -36,10 +49,9 @@ contract CrowdFundingUnitTest is Test {
         vm.deal(projectOwner1, 0);
     }
 
-    //测试创建项目
     function testCreateProject() external {
         vm.expectEmit(true, false, false, true);
-        emit CrowdfundingPlatform.ProjectCreated(0, address(this));
+        emit ProjectCreated(0, address(this));
         platform.createProject(
             "Test Project",
             "Test Description",
@@ -79,14 +91,13 @@ contract CrowdFundingUnitTest is Test {
         _;
     }
 
-    //测试资助项目
     function testFundProject() external createProject {
         uint amount = 1 ether;
         // test fund function and the event
         vm.startPrank(user1);
         vm.deal(user1, amount);
         vm.expectEmit(true, true, true, true);
-        emit CrowdfundingPlatform.FundReceived(0, user1, amount);
+        emit FundReceived(0, user1, amount);
         platform.fundProject{value: amount}(0);
 
         //test the state after funding
@@ -108,7 +119,6 @@ contract CrowdFundingUnitTest is Test {
         platform.fundProject{value: amount}(0);
     }
 
-    //测试资助项目错误条件：达到众筹金额
     function testProjectRevertAfterReachGoal() external createProject {
         //fill the fund pool to reach the fundingGoal
         vm.prank(user1);
@@ -121,53 +131,44 @@ contract CrowdFundingUnitTest is Test {
         platform.fundProject{value: 1 ether}(0);
     }
 
-    //测试资助项目错误条件：发送金额为0
     function testFundProjectRevertZeroAmount() external createProject {
         vm.prank(user1);
         vm.expectRevert("Funding amout must be greater than 0");
         platform.fundProject{value: 0 ether}(0);
     }
 
-    // 测试资助项目错误条件：项目已完成
     function testFundProjectRevertWhenFinished() external createProject {
         uint amount = fundGoal;
 
-        // 用户1资助项目达到目标
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
 
-        // 项目方提现
         vm.prank(projectOwner1);
         platform.withdraw(0);
 
-        // 测试资助项目错误条件：项目已完成
         vm.prank(user2);
         vm.deal(user2, 1 ether);
         vm.expectRevert("project was sucessed and finshed");
         platform.fundProject{value: 1 ether}(0);
     }
 
-    // 测试资助项目错误条件：项目已取消
     function testFundProjectRevertWhenCancelled() external createProject {
         uint amount = 1 ether;
 
-        // 项目方取消项目
         vm.prank(projectOwner1);
         platform.cancalProject(0);
 
-        // 测试资助项目错误条件：项目已取消
         vm.prank(user1);
         vm.deal(user1, amount);
         vm.expectRevert("project was cancelled by creator");
         platform.fundProject{value: amount}(0);
     }
 
-    //测试取消项目cancalProject()
     function testCancelProject() external createProject {
         vm.startPrank(projectOwner1);
         vm.expectEmit(true, true, true, true);
-        emit CrowdfundingPlatform.ProjectCancelled(0);
+        emit ProjectCancelled(0);
         platform.cancalProject(0);
         vm.stopPrank();
 
@@ -179,18 +180,15 @@ contract CrowdFundingUnitTest is Test {
         );
     }
 
-    // 测试取消项目cancalProject()各种错误条件
     function testCancelProjectRevertNotOwner() external createProject {
         vm.prank(user1);
         vm.expectRevert("Caller is not the project owner!");
         platform.cancalProject(0);
     }
 
-    // 测试refund(),达到时间但未达到目标，用户发起退款并成功
     function testRefund() external createProject {
         uint amount = 1 ether;
 
-        // 用户1、用户2资助项目
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
@@ -199,7 +197,6 @@ contract CrowdFundingUnitTest is Test {
         vm.deal(user2, amount * 2);
         platform.fundProject{value: amount}(0);
 
-        // 跳过时间使项目过期
         vm.warp(block.timestamp + duration + 1);
 
         uint user2Balance = user2.balance;
@@ -208,9 +205,8 @@ contract CrowdFundingUnitTest is Test {
         assertEq(user2Balance, amount * 2 - amount);
         assertEq(fundedAmount, amount * 2);
 
-        // 用户2请求退款
         vm.expectEmit(true, true, true, true);
-        emit CrowdfundingPlatform.Refund(0, user2, amount);
+        emit Refund(0, user2, amount);
         platform.refund(0);
 
         assertEq(user2.balance, user2Balance + amount);
@@ -219,37 +215,30 @@ contract CrowdFundingUnitTest is Test {
         vm.stopPrank();
     }
 
-    // 测试refund()各种错误条件
     function testRefundRevertNotEndTime() external createProject {
         uint amount = 1 ether;
 
-        // 用户1资助项目
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
 
-        // 用户1请求退款
         vm.prank(user1);
         vm.expectRevert("not reach the endTime");
         platform.refund(0);
     }
 
-    // 测试refund()各种错误条件：项目已完成
     function testRefundRevertWhenFinished() external createProject {
         uint amount = fundGoal;
 
-        // 用户1资助项目达到目标
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
 
-        // 项目方提现
         vm.prank(projectOwner1);
         platform.withdraw(0);
 
         console.log(uint(platform.getProjectStatus(0)));
 
-        // 测试退款错误条件：项目已完成
         vm.prank(user1);
         vm.expectRevert(
             "Funding is Success and the project creator withraw the fund"
@@ -257,11 +246,8 @@ contract CrowdFundingUnitTest is Test {
         platform.refund(0);
     }
 
-    // 测试refund()各种错误条件: 不是贡献者
     function testRefundRevertNoContribution() external createProject {
-        // 测试退款错误条件：无可退还的资助金额
         vm.startPrank(user1);
-        // 跳过时间使项目过期
         vm.warp(block.timestamp + duration + 1);
         console.log("contribution:", platform.getContribution(0));
         vm.expectRevert("not enough to refund!");
@@ -269,28 +255,21 @@ contract CrowdFundingUnitTest is Test {
         vm.stopPrank();
     }
 
-    // 测试withdraw(), 平台和项目所有者都收到了转账，并且相应的参数得到了更新
     function testWithdraw() external createProject {
         uint amount = fundGoal;
         uint feePercentage = platform.feePercentage();
 
-        // 用户1资助项目
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
 
-        // 项目方提现
         vm.startPrank(projectOwner1);
         uint projectFundedAmout = platform.getProjectFundedAmout(0);
         uint withdrawFee = (projectFundedAmout * feePercentage) / 100;
         // console.log("projectFundedAmout", projectFundedAmout);
         // console.log("withdrawFee:", withdrawFee);
         vm.expectEmit(true, true, true, true);
-        emit CrowdfundingPlatform.FundWithdraw(
-            0,
-            projectOwner1,
-            projectFundedAmout - withdrawFee
-        );
+        emit FundWithdraw(0, projectOwner1, projectFundedAmout - withdrawFee);
         platform.withdraw(0);
 
         assertEq(platform.getProjectFundedAmout(0), 0);
@@ -303,7 +282,6 @@ contract CrowdFundingUnitTest is Test {
         vm.stopPrank();
     }
 
-    // 测试withdraw各种错误条件
     function testWithdrawRevertNotOwner() external createProject {
         vm.prank(user1);
         vm.expectRevert("Caller is not the project owner!");
@@ -313,22 +291,18 @@ contract CrowdFundingUnitTest is Test {
     function testWithdrawRevertNotActive() external createProject {
         uint amount = fundGoal;
 
-        // 用户1资助项目
         vm.prank(user1);
         vm.deal(user1, amount);
         platform.fundProject{value: amount}(0);
 
-        // 项目方取消项目
         vm.prank(projectOwner1);
         platform.cancalProject(0);
 
-        // 尝试提现
         vm.prank(projectOwner1);
         vm.expectRevert("the project were finished or cancelled ");
         platform.withdraw(0);
     }
 
-    // 测试transferOwnership() 及其错误条件
     function testTransferOwnership() external {
         vm.prank(platformAdmin);
         platform.transferOwnership(address(this));
@@ -341,7 +315,6 @@ contract CrowdFundingUnitTest is Test {
         platform.transferOwnership(user1);
     }
 
-    // 测试修改费率及其错误条件
     function testSetPlatformFee() external {
         uint newFee = 10;
         vm.prank(platformAdmin);
