@@ -1,3 +1,5 @@
+[中文文档](./README-CN.md)
+
 # A Multi-Chain Crowdfunding Platform Smart Contract Development, Testing, and Deployment
 
 ## About the Project
@@ -108,7 +110,7 @@ Deploy to Arbitrum Sepolia chain:
 
 Write the contract address deployed on the chain into OnchainInteract.s.sol
 
-![image](pic/image-20240705120951507.png)
+![image-20240705120951507](pic/image-20240705120951507.png)
 
     forge script ./script/OnchainInteract.s.sol --rpc-url ${ETH_SPEOLIA_RPC_URL} --broadcast -vvvv --legacy
 
